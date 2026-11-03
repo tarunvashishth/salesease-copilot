@@ -1,0 +1,12 @@
+{
+  "name": "salesease-copilot",
+  "version": "1.0.0",
+  "description": "Reliable AI sales copilot: triages FMCG field-sales updates into validated JSON with human-review escalation.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "eval": "node eval/run.js",
+    "test": "node eval/run.js"
+  },
+  "engines": { "node": ">=20" }
+}
