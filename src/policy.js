@@ -4,7 +4,8 @@ import { URGENCIES } from "./schema.js";
 import { VERIFIED_STOCK } from "./data.js";
 import { ruleBasedTriage } from "./rules.js";
 
-const FORCED_CATEGORIES = ["quality_safety", "suspicious_input", "stock_discrepancy", "competitor_activity"];
+// "unclear" is forced too: a stock claim with no matching outlet+SKU record cannot be a verified stockout.
+const FORCED_CATEGORIES = ["quality_safety", "suspicious_input", "stock_discrepancy", "competitor_activity", "unclear"];
 const norm = (s) => s.toLowerCase().replace(/[‘’“”]/g, "'").replace(/\s+/g, " ").trim();
 
 const DIAGNOSIS = /food poisoning|poisoned|caused by|due to (the )?(product|drink|juice|cola|pack)|diagnos|salmonella|e\.? ?coli|bacteri|toxic|allergic reaction to/i;

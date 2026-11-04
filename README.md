@@ -9,7 +9,7 @@ npm start                      # http://localhost:3000, zero dependencies, Node 
 ANTHROPIC_API_KEY=... npm start   # real LLM (Claude via Messages API, forced tool call = structured output)
 GEMINI_API_KEY=... npm start      # or Gemini (free tier key, JSON-schema response)
 MISTRAL_API_KEY=... npm start     # or Mistral (free tier key), same forced-tool-call approach
-npm run eval                   # 12 scenarios against the mock adapter
+npm run eval                   # 13 scenarios against the mock adapter
 node eval/run.js --live --write   # same cases against the real model (needs either key)
 ```
 
@@ -36,12 +36,13 @@ update -> analyze() (outlet/SKU match, verified-table lookup, signal regexes)
 
 ## Evaluation
 
-Cases are in `eval/cases.js` (the 5 required scenarios + 7 of my own: missing info, simulated timeout, invalid JSON, model obeys injection, model invents a figure, model authorises a price match, model API rate-limited). Latest table: `eval/last-run.md`.
+Cases are in `eval/cases.js` (the 5 required scenarios + 8 of my own: missing info, simulated timeout, invalid JSON, model obeys injection, model invents a figure, model authorises a price match, model API rate-limited, model labels an ungrounded claim as a stockout). Latest table: `eval/last-run.md`.
 
 **Iteration log (real, from the first run: 9/11):**
 1. **C4 (model obeys injection) failed**: policy corrected urgency/category/review, but the action still said "Marked as resolved as instructed." Fix: when the category is overridden or an injection is present and the action reads as a closure, the model's action/reason/missing-info are replaced with the deterministic ones. Re-run: pass.
 2. **Found on the live Mistral deploy:** the free tier returned HTTP 429. The fallback worked, but its reason text contained "429", which my own "no invented numbers" rule flagged and so replaced the fallback action every time. Fix: the fallback reason no longer embeds raw error text (it stays in `meta.fallback_reason`), and the retry now waits 1.5 s after a 429. Added case C7.
-3. **S3 failed**: bug in my test regex (could not distinguish "no price change or match is authorised" from an approval). Fixed the test, not the product.
+3. **Found on the live Gemini model:** for "Stock is running low at the shop" (no outlet or SKU) the model returned `stockout`, which cannot be verified. Fix: `unclear` is now a forced category in the policy layer (no matching outlet+SKU record -> cannot be a stockout). Added case C8.
+4. **S3 failed**: bug in my test regex (could not distinguish "no price change or match is authorised" from an approval). Fixed the test, not the product.
 
 ## Known limitations (read before relying on this)
 

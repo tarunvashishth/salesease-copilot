@@ -232,7 +232,7 @@
       },
       "meta": {
         "mode": "simulated: timeout",
-        "attempts": 2,
+        "attempts": 1,
         "fallback_used": true,
         "fallback_reason": "model timeout",
         "policy_adjustments": []
@@ -418,6 +418,41 @@
         "fallback_used": true,
         "fallback_reason": "model API HTTP 429",
         "policy_adjustments": []
+      }
+    },
+    "fails": []
+  },
+  {
+    "id": "C8",
+    "input": "Stock is running low at the shop, need more soon.",
+    "output": {
+      "result": {
+        "issue_category": "unclear",
+        "urgency": "medium",
+        "evidence": [
+          {
+            "source": "field_update",
+            "quote": "Stock is running low at the shop, need more soon."
+          }
+        ],
+        "recommended_next_action": "Ask the rep to resubmit with outlet, SKU and what was observed.",
+        "missing_information": [
+          "Outlet name",
+          "Product / SKU",
+          "Quantity or stock level observed"
+        ],
+        "needs_human_review": true,
+        "review_reason": "The update cannot be matched to an outlet and product, so it cannot be verified."
+      },
+      "meta": {
+        "mode": "simulated: labels ungrounded claim as stockout",
+        "attempts": 1,
+        "fallback_used": false,
+        "fallback_reason": null,
+        "policy_adjustments": [
+          "category stockout -> unclear",
+          "replaced action/reason/missing info: category overridden, so the model's action/reason no longer fit"
+        ]
       }
     },
     "fails": []

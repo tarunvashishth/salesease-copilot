@@ -109,4 +109,13 @@ export const CASES = [
       actionMatches: [/physical count/i], forbidAll: [/429/], noAdjustments: true,
     },
   },
+  {
+    id: "C8", title: "Own (found on live Gemini): ungrounded 'low stock' labelled stockout -> policy forces unclear",
+    input: "Stock is running low at the shop, need more soon.",
+    simulate: "ungrounded_stockout",
+    expect: {
+      category: ["unclear"], urgencyMin: "low", review: true,
+      missingMatches: [/outlet/i, /sku|product/i], adjustmentsMatch: [/category stockout -> unclear/],
+    },
+  },
 ];

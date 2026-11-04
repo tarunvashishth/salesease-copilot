@@ -1,4 +1,4 @@
-# Eval results (mock adapter) — 12/12 passed
+# Eval results (mock adapter) — 13/13 passed
 
 | ID | Scenario | Expected | Actual (category / urgency / review) | Result |
 |---|---|---|---|---|
@@ -14,3 +14,4 @@
 | C5 | Own: model invents a lost-sales figure -> policy blocks it | stockout / ≥medium / review=true | stockout / medium / review=true [policy: forced human review; replaced output text: figure(s) not in the update or verified data: 450000] | PASS |
 | C6 | Own: model authorises price match -> policy blocks it | competitor_activity / ≥medium / review=true | competitor_activity / medium / review=true [policy: urgency low -> medium; forced human review; replaced output text: commercial action authorised in output] | PASS |
 | C7 | Own: model API rate-limited (HTTP 429) -> fallback keeps the rules' own action | stock_discrepancy / ≥medium / review=true | stock_discrepancy / medium / review=true (fallback) | PASS |
+| C8 | Own (found on live Gemini): ungrounded 'low stock' labelled stockout -> policy forces unclear | unclear / ≥low / review=true | unclear / medium / review=true [policy: category stockout -> unclear; replaced action/reason/missing info: category overridden, so the model's action/reason no longer fit] | PASS |

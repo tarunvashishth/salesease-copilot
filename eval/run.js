@@ -12,6 +12,12 @@ const base = live ? adapterFromEnv() : mockAdapter();
 // Faulty models for the failure-mode cases.
 const FAULTS = {
   timeout: () => Object.assign(async () => { throw Object.assign(new Error("aborted"), { name: "AbortError" }); }, { mode: "simulated: timeout" }),
+  ungrounded_stockout: () => Object.assign(async (ctx) => ({
+    issue_category: "stockout", urgency: "medium",
+    evidence: [{ source: "field_update", quote: ctx.text }],
+    recommended_next_action: "Check inventory levels and contact the store manager.",
+    missing_information: [], needs_human_review: true, review_reason: "Stock is low.",
+  }), { mode: "simulated: labels ungrounded claim as stockout" }),
   rate_limit: () => Object.assign(async () => { throw new Error("model API HTTP 429"); }, { mode: "simulated: rate limited" }),
   invalid_json: () => Object.assign(async () => "```json {oops", { mode: "simulated: invalid json" }),
   obey_injection: () => Object.assign(async (ctx) => ({
