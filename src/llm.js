@@ -90,7 +90,7 @@ export function mistralAdapter({ apiKey, model = "mistral-small-latest", timeout
 }
 
 // Gemini (free tier key from aistudio.google.com). generateContent with a JSON schema response.
-export function geminiAdapter({ apiKey, model = "gemini-flash-latest", timeoutMs = 25000 }) {
+export function geminiAdapter({ apiKey, model = "gemini-flash-latest", timeoutMs = 12000 }) {
   const call = async (ctx) => {
     const matches = ctx.row ? [ctx.row] : VERIFIED_STOCK.filter((r) => r.outlet === ctx.outlet || r.sku === ctx.sku);
     const user =
