@@ -2,7 +2,7 @@
 import { triage, MAX_INPUT_CHARS } from "../../src/triage.js";
 import { adapterFromEnv } from "../../src/llm.js";
 
-const adapter = adapterFromEnv({ ANTHROPIC_API_KEY: Netlify.env.get("ANTHROPIC_API_KEY"), MISTRAL_API_KEY: Netlify.env.get("MISTRAL_API_KEY"), MODEL: Netlify.env.get("MODEL") });
+const adapter = adapterFromEnv({ ANTHROPIC_API_KEY: Netlify.env.get("ANTHROPIC_API_KEY"), GEMINI_API_KEY: Netlify.env.get("GEMINI_API_KEY"), MISTRAL_API_KEY: Netlify.env.get("MISTRAL_API_KEY"), MODEL: Netlify.env.get("MODEL") });
 const RATE_LIMIT = Number(Netlify.env.get("RATE_LIMIT_PER_MIN")) || 20;
 const hits = new Map(); // per warm instance only; use a shared store for real limits
 

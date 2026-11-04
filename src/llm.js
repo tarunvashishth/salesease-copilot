@@ -89,9 +89,42 @@ export function mistralAdapter({ apiKey, model = "mistral-small-latest", timeout
   return Object.assign(call, { mode: `mistral:${model}` });
 }
 
-// Precedence: Anthropic key, then Mistral key, else the labelled mock.
+// Gemini (free tier key from aistudio.google.com). generateContent with a JSON schema response.
+export function geminiAdapter({ apiKey, model = "gemini-2.5-flash", timeoutMs = 25000 }) {
+  const call = async (ctx) => {
+    const matches = ctx.row ? [ctx.row] : VERIFIED_STOCK.filter((r) => r.outlet === ctx.outlet || r.sku === ctx.sku);
+    const user =
+      `<verified_table_matches>${JSON.stringify(matches)}</verified_table_matches>\n` +
+      `<field_update>${ctx.text.replaceAll("</field_update>", "")}</field_update>`;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: "POST",
+        signal: ctl.signal,
+        headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT.replace("Respond only by calling the triage tool.", "Respond only with JSON matching the schema.") }] },
+          contents: [{ role: "user", parts: [{ text: user }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 1024, responseMimeType: "application/json", responseJsonSchema: OUTPUT_JSON_SCHEMA },
+        }),
+      });
+      if (!res.ok) throw new Error(`model API HTTP ${res.status}`); // body not logged: may echo input
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("");
+      if (!text) throw new Error("model returned no content");
+      return JSON.parse(text);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+  return Object.assign(call, { mode: `gemini:${model}` });
+}
+
+// Precedence: Anthropic key, then Gemini, then Mistral, else the labelled mock.
 export function adapterFromEnv(env = process.env) {
   if (env.ANTHROPIC_API_KEY) return anthropicAdapter({ apiKey: env.ANTHROPIC_API_KEY, model: env.MODEL || undefined });
+  if (env.GEMINI_API_KEY) return geminiAdapter({ apiKey: env.GEMINI_API_KEY, model: env.MODEL || undefined });
   if (env.MISTRAL_API_KEY) return mistralAdapter({ apiKey: env.MISTRAL_API_KEY, model: env.MODEL || undefined });
   return mockAdapter();
 }
