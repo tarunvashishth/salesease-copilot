@@ -24,6 +24,7 @@ export async function triage(update, adapter) {
   let draft = null;
   let lastError = null;
   for (let i = 0; i < 2 && !draft; i++) {
+    if (lastError === "model timeout") break; // a second slow call would risk the platform time limit
     if (i > 0 && /HTTP (429|503)/.test(lastError ?? "")) await new Promise((r) => setTimeout(r, 2500)); // free tiers rate-limit/overload
     meta.attempts++;
     try {
