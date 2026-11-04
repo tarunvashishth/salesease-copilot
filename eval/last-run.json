@@ -197,9 +197,7 @@
         "attempts": 1,
         "fallback_used": false,
         "fallback_reason": null,
-        "policy_adjustments": [
-          "no traceable evidence left; used evidence from deterministic analysis"
-        ]
+        "policy_adjustments": []
       }
     },
     "fails": []
@@ -230,7 +228,7 @@
           "Whether stock sits in the backroom or an unreceived delivery"
         ],
         "needs_human_review": true,
-        "review_reason": "Automated model unavailable (model timeout); deterministic rules applied, so a person should confirm. Field report (stockout) conflicts with system stock of 48 units; cause is unknown."
+        "review_reason": "Automated model unavailable; deterministic rules applied, so a person should confirm. Field report (stockout) conflicts with system stock of 48 units; cause is unknown."
       },
       "meta": {
         "mode": "simulated: timeout",
@@ -268,7 +266,7 @@
           "Whether the customer was reached and what they reported"
         ],
         "needs_human_review": true,
-        "review_reason": "Automated model unavailable (invalid model output: output is not an object); deterministic rules applied, so a person should confirm. Possible customer health impact; requires urgent human judgement. The system does not assess medical cause."
+        "review_reason": "Automated model unavailable; deterministic rules applied, so a person should confirm. Possible customer health impact; requires urgent human judgement. The system does not assess medical cause."
       },
       "meta": {
         "mode": "simulated: invalid json",
@@ -382,6 +380,44 @@
           "forced human review",
           "replaced output text: commercial action authorised in output"
         ]
+      }
+    },
+    "fails": []
+  },
+  {
+    "id": "C7",
+    "input": "Metro Fresh reports a stockout of Cola 500ml.",
+    "output": {
+      "result": {
+        "issue_category": "stock_discrepancy",
+        "urgency": "medium",
+        "evidence": [
+          {
+            "source": "field_update",
+            "quote": "Metro Fresh reports a stockout of Cola 500ml."
+          },
+          {
+            "source": "verified_table",
+            "outlet": "Metro Fresh",
+            "sku": "Cola 500ml",
+            "system_stock": 48
+          }
+        ],
+        "recommended_next_action": "Ask the rep to do a physical count and photo of the shelf and backroom for Cola 500ml at Metro Fresh; reconcile against the system figure of 48 units.",
+        "missing_information": [
+          "Physical count at the outlet",
+          "Time of the check",
+          "Whether stock sits in the backroom or an unreceived delivery"
+        ],
+        "needs_human_review": true,
+        "review_reason": "Automated model unavailable; deterministic rules applied, so a person should confirm. Field report (stockout) conflicts with system stock of 48 units; cause is unknown."
+      },
+      "meta": {
+        "mode": "simulated: rate limited",
+        "attempts": 2,
+        "fallback_used": true,
+        "fallback_reason": "model API HTTP 429",
+        "policy_adjustments": []
       }
     },
     "fails": []

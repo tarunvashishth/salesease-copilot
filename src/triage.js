@@ -16,6 +16,7 @@ export async function triage(update, adapter) {
   let draft = null;
   let lastError = null;
   for (let i = 0; i < 2 && !draft; i++) {
+    if (i > 0 && /HTTP 429/.test(lastError ?? "")) await new Promise((r) => setTimeout(r, 1500)); // free tiers rate-limit bursts
     meta.attempts++;
     try {
       const candidate = await adapter(ctx);
@@ -32,7 +33,7 @@ export async function triage(update, adapter) {
     meta.fallback_reason = lastError;
     draft = ruleBasedTriage(ctx);
     draft.needs_human_review = true;
-    draft.review_reason = `Automated model unavailable (${lastError}); deterministic rules applied, so a person should confirm.${draft.review_reason ? " " + draft.review_reason : ""}`;
+    draft.review_reason = `Automated model unavailable; deterministic rules applied, so a person should confirm.${draft.review_reason ? " " + draft.review_reason : ""}`;
   }
 
   const { result, adjustments } = enforce(draft, ctx);

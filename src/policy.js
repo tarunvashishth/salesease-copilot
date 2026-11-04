@@ -38,7 +38,7 @@ export function enforce(draft, ctx) {
   });
   if (kept.length !== out.evidence.length) note(`dropped ${out.evidence.length - kept.length} untraceable evidence item(s)`);
   out.evidence = kept;
-  if (!out.evidence.length) {
+  if (!out.evidence.length && baseline.evidence.length) {
     out.evidence = baseline.evidence;
     note("no traceable evidence left; used evidence from deterministic analysis");
   }

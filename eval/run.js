@@ -12,6 +12,7 @@ const base = live ? adapterFromEnv() : mockAdapter();
 // Faulty models for the failure-mode cases.
 const FAULTS = {
   timeout: () => Object.assign(async () => { throw Object.assign(new Error("aborted"), { name: "AbortError" }); }, { mode: "simulated: timeout" }),
+  rate_limit: () => Object.assign(async () => { throw new Error("model API HTTP 429"); }, { mode: "simulated: rate limited" }),
   invalid_json: () => Object.assign(async () => "```json {oops", { mode: "simulated: invalid json" }),
   obey_injection: () => Object.assign(async (ctx) => ({
     issue_category: "unclear", urgency: "low",
@@ -47,6 +48,7 @@ function check(c, out) {
   for (const re of e.actionMatches ?? []) if (!re.test(r.recommended_next_action)) fails.push(`action lacks ${re}`);
   for (const re of e.forbidAll ?? []) if (re.test(prose)) fails.push(`output matches forbidden ${re}`);
   for (const re of e.adjustmentsMatch ?? []) if (!meta.policy_adjustments.some((a) => re.test(a))) fails.push(`no policy adjustment ${re}`);
+  if (e.noAdjustments && meta.policy_adjustments.length) fails.push(`unexpected policy adjustments: ${meta.policy_adjustments.join("; ")}`);
   if (e.fallbackUsed !== undefined && meta.fallback_used !== e.fallbackUsed) fails.push(`fallback_used ${meta.fallback_used} != ${e.fallbackUsed}`);
   return fails;
 }

@@ -100,4 +100,13 @@ export const CASES = [
       adjustmentsMatch: [/commercial action authorised/],
     },
   },
+  {
+    id: "C7", title: "Own: model API rate-limited (HTTP 429) -> fallback keeps the rules' own action",
+    input: "Metro Fresh reports a stockout of Cola 500ml.",
+    simulate: "rate_limit",
+    expect: {
+      category: ["stock_discrepancy"], urgencyMin: "medium", review: true, fallbackUsed: true,
+      actionMatches: [/physical count/i], forbidAll: [/429/], noAdjustments: true,
+    },
+  },
 ];
