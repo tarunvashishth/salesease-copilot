@@ -90,7 +90,7 @@ export function mistralAdapter({ apiKey, model = "mistral-small-latest", timeout
 }
 
 // Gemini (free tier key from aistudio.google.com). generateContent with a JSON schema response.
-export function geminiAdapter({ apiKey, model = "gemini-2.5-flash-lite", timeoutMs = 25000 }) {
+export function geminiAdapter({ apiKey, model = "gemini-3.5-flash-lite", timeoutMs = 25000 }) {
   const call = async (ctx) => {
     const matches = ctx.row ? [ctx.row] : VERIFIED_STOCK.filter((r) => r.outlet === ctx.outlet || r.sku === ctx.sku);
     const user =
@@ -106,7 +106,7 @@ export function geminiAdapter({ apiKey, model = "gemini-2.5-flash-lite", timeout
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_PROMPT.replace("Respond only by calling the triage tool.", "Respond only with JSON matching the schema.") }] },
           contents: [{ role: "user", parts: [{ text: user }] }],
-          generationConfig: { temperature: 0, maxOutputTokens: 1024, responseMimeType: "application/json", responseJsonSchema: OUTPUT_JSON_SCHEMA },
+          generationConfig: { maxOutputTokens: 1024, responseMimeType: "application/json", responseJsonSchema: OUTPUT_JSON_SCHEMA },
         }),
       });
       if (!res.ok) throw new Error(`model API HTTP ${res.status}`); // body not logged: may echo input
