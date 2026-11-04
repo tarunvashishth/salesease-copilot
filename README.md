@@ -7,11 +7,12 @@ Reads a plain-text FMCG field-sales update and returns validated JSON: `issue_ca
 ```bash
 npm start                      # http://localhost:3000, zero dependencies, Node >= 20
 ANTHROPIC_API_KEY=... npm start   # real LLM (Claude via Messages API, forced tool call = structured output)
+MISTRAL_API_KEY=... npm start     # or Mistral (free tier key), same forced-tool-call approach
 npm run eval                   # 11 scenarios against the mock adapter
-node eval/run.js --live --write   # same cases against the real model (needs key)
+node eval/run.js --live --write   # same cases against the real model (needs either key)
 ```
 
-Without `ANTHROPIC_API_KEY` the app runs a **mock adapter (rule-based, no LLM)**. `/api/health` and the UI show which mode is active. Secrets are read from env only; see `.env.example`.
+Without `ANTHROPIC_API_KEY` or `MISTRAL_API_KEY` the app runs a **mock adapter (rule-based, no LLM)**. `/api/health` and the UI show which mode is active. Secrets are read from env only; see `.env.example`.
 
 API: `POST /api/triage` with `{"update": "..."}` -> `{ result, meta }`. Limits: 1000 chars per update, 4 KB body, 20 req/min/IP (`RATE_LIMIT_PER_MIN`).
 

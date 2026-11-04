@@ -54,8 +54,44 @@ export function anthropicAdapter({ apiKey, model = "claude-sonnet-5-5", timeoutM
   return Object.assign(call, { mode: `anthropic:${model}` });
 }
 
+// Mistral (free "Experiment" tier key from console.mistral.ai). OpenAI-style chat API with a forced tool call.
+export function mistralAdapter({ apiKey, model = "mistral-small-latest", timeoutMs = 20000 }) {
+  const call = async (ctx) => {
+    const matches = ctx.row ? [ctx.row] : VERIFIED_STOCK.filter((r) => r.outlet === ctx.outlet || r.sku === ctx.sku);
+    const user =
+      `<verified_table_matches>${JSON.stringify(matches)}</verified_table_matches>\n` +
+      `<field_update>${ctx.text.replaceAll("</field_update>", "")}</field_update>`;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    try {
+      const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        signal: ctl.signal,
+        headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model,
+          temperature: 0,
+          max_tokens: 1024,
+          tools: [{ type: "function", function: { name: "triage", description: "Return the triage result.", parameters: OUTPUT_JSON_SCHEMA } }],
+          tool_choice: "any",
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: user }],
+        }),
+      });
+      if (!res.ok) throw new Error(`model API HTTP ${res.status}`); // body not logged: may echo input
+      const data = await res.json();
+      const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      if (!args) throw new Error("model returned no tool call");
+      return typeof args === "string" ? JSON.parse(args) : args;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+  return Object.assign(call, { mode: `mistral:${model}` });
+}
+
+// Precedence: Anthropic key, then Mistral key, else the labelled mock.
 export function adapterFromEnv(env = process.env) {
-  return env.ANTHROPIC_API_KEY
-    ? anthropicAdapter({ apiKey: env.ANTHROPIC_API_KEY, model: env.MODEL || undefined })
-    : mockAdapter();
+  if (env.ANTHROPIC_API_KEY) return anthropicAdapter({ apiKey: env.ANTHROPIC_API_KEY, model: env.MODEL || undefined });
+  if (env.MISTRAL_API_KEY) return mistralAdapter({ apiKey: env.MISTRAL_API_KEY, model: env.MODEL || undefined });
+  return mockAdapter();
 }
